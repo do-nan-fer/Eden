@@ -1,0 +1,8 @@
+Django==4.2.10
+celery>=5.0,<6.0
+djangorestframework
+redis>=3.5.0
+requests
+celery
+django-extensions
+
