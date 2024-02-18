@@ -142,7 +142,11 @@ CELERY_TIMEZONE = 'UTC'
 
 CELERY_BEAT_SCHEDULE = {
     'process_plants_with_status_1': {
-        'task': 'process_plants_with_status_1',  # Use the full path to your task function
-        'schedule': crontab(minute='*'),  # Adjust the schedule according to your needs
+        'task': 'process_plants_with_status_1',  # Ensure this is the correct path to your task
+        'schedule': crontab(minute='*'),  # Runs every minute, adjust as needed
     },
+#    'process_packages_with_latest_response': {
+#        'task': 'process_packages_with_latest_response',  # Ensure this is the correct path to your task
+#        'schedule': crontab(minute='*'),  # Runs every minute, adjust as needed
+#    }
 }

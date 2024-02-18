@@ -9,7 +9,7 @@ class PlantSerializer(serializers.ModelSerializer):
 class AvailablePlantSerializer(serializers.ModelSerializer):
     class Meta:
         model = Plant
-        fields = ['id', 'name']
+        fields = ['id', 'name', 'collect', 'status']
 
 class ApiFieldSerializer(serializers.ModelSerializer):
     class Meta:
