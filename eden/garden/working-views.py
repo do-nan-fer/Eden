@@ -42,17 +42,13 @@ class AvailablePlantsAPIView(generics.ListAPIView):
         return queryset
 
 class PlantLogsView(APIView):
-    def get(self, request, plant_ids, numback):
-        # Splitting the plant_ids parameter into a list of integers
-        plant_ids = [int(plant_id) for plant_id in plant_ids.split(',')]
-
-        # Fetching data from Elasticsearch
+    def get(self, request, plant_id, numback):
         es_url = 'https://192.168.101.11:9200/garden-plants/_search'
-        auth = ('admin', 'admin')
+        auth = ('admin', 'admin')  # Reminder to use actual credentials
         headers = {'Content-Type': 'application/json'}
         query = {
             "size": numback,
-            "sort": [{"timestamp": {"order": "desc"}}]  # Fetch most recent logs first
+            "sort": [{"timestamp": {"order": "desc"}}]
         }
 
         try:
@@ -63,69 +59,46 @@ class PlantLogsView(APIView):
             print("PRINTING INITIAL DATA:")
             print(data)  # Printing the initial data before filtering
 
-            self.filter_data(data, plant_ids)
+            self.filter_data(data, plant_id)
 
             print("PRINTING FILTERED DATA:")
-            print(data)  # Printing the filtered data
-
-            # Reverse the order of hits to simulate a stack, newest at the bottom
-            data['hits']['hits'] = data['hits']['hits'][::-1]
+            print(data)  # Printing the data after filtering
 
             return Response(data, status=status.HTTP_200_OK)
 
         except requests.RequestException as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    def filter_data(self, data, target_plant_ids):
-        # Convert target_plant_ids to strings for consistent comparison
-        target_plant_ids = [str(plant_id) for plant_id in target_plant_ids]
-
+    def filter_data(self, data, target_plant_id):
+        # Convert target_plant_id to string to ensure consistent comparison
+        target_plant_id = str(target_plant_id)
+        
         for hit in data['hits']['hits']:
-            filtered_responses = []
+            # Printing the target plant ID
+            print("TARGET PLANT ID:", target_plant_id)
+        
             for response in hit['_source']['responses']:
                 # Getting the plant ID of each response
-                response_plant_id = str(response.get('plant_id'))
-                if response_plant_id in target_plant_ids:
-                    filtered_responses.append(response)
+                response_plant_id = response.get('plant_id')
+                # Convert response plant ID to string for consistent comparison
+                response_plant_id = str(response_plant_id)
+                # Printing the response plant ID
+                print("RESPONSE PLANT ID:", response_plant_id)
+            
+                # Comparing the target plant ID with the response plant ID
+                if response_plant_id == target_plant_id:
+                    print(f"Comparison Result: {target_plant_id} == {response_plant_id}")
+                else:
+                    print(f"Comparison Result: {target_plant_id} != {response_plant_id}")
+        
+            # Filtering out only the response objects with matching plant_id
+            filtered_responses = [response for response in hit['_source']['responses'] if str(response.get('plant_id')) == target_plant_id]
+        
             # Assigning the filtered responses back to the hit
             hit['_source']['responses'] = filtered_responses
-
-class PackageLogsView(APIView):
-    def get(self, request, package_ids, numback):
-        # Splitting the package_ids parameter into a list of integers
-        package_ids = [int(package_id) for package_id in package_ids.split(',')]
         
-        # Fetching data from Elasticsearch
-        es_url = 'https://192.168.101.11:9200/garden-packages/_search'
-        auth = ('admin', 'admin')
-        headers = {'Content-Type': 'application/json'}
-        query = {
-            "size": numback,
-            "sort": [{"timestamp": {"order": "desc"}}],  # Fetch most recent logs first
-            "query": {"match_all": {}}
-        }
-
-        try:
-            response = requests.post(es_url, auth=auth, headers=headers, json=query, verify=False)
-            response.raise_for_status()
-            data = response.json()
-
-            # Filtering process
-            hits = data['hits']['hits']
-            for hit in hits:
-                packages = hit['_source'].get('packages', [])
-                filtered_packages = [package for package in packages if package.get('package_id') in package_ids]
-                hit['_source']['packages'] = filtered_packages
-            
-            # Debugging prints
-            print(f"Filtered data based on package_ids {package_ids}:")
-            for hit in hits:
-                print(hit['_source']['packages'])
-
-            return Response(data, status=status.HTTP_200_OK)
-
-        except requests.RequestException as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            # Printing the filtered responses
+            print("FILTERED", filtered_responses)
 
 class PlantDataView(APIView):
     def get(self, request, plant_id):

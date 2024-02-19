@@ -45,14 +45,15 @@ class PickSerializer(serializers.ModelSerializer):
 
 class PackageSerializer(serializers.ModelSerializer):
     picks = serializers.PrimaryKeyRelatedField(many=True, queryset=Pick.objects.all())
+    unique_plants_count = serializers.SerializerMethodField()
+    unique_api_fields_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Package
-        fields = ['id', 'name', 'description', 'picks']
+        fields = ['id', 'name', 'description', 'picks', 'unique_plants_count', 'unique_api_fields_count']
 
-    def create(self, validated_data):
-        picks_data = validated_data.pop('picks')
-        package = Package.objects.create(**validated_data)
-        package.picks.set(picks_data)
-        return package
+    def get_unique_plants_count(self, obj):
+        return obj.count_unique_plants()
 
+    def get_unique_api_fields_count(self, obj):
+        return obj.count_unique_api_fields()

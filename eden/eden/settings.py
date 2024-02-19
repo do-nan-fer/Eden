@@ -145,8 +145,8 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'process_plants_with_status_1',  # Ensure this is the correct path to your task
         'schedule': crontab(minute='*'),  # Runs every minute, adjust as needed
     },
-#    'process_packages_with_latest_response': {
-#        'task': 'process_packages_with_latest_response',  # Ensure this is the correct path to your task
-#        'schedule': crontab(minute='*'),  # Runs every minute, adjust as needed
-#    }
+    'process_packages_with_latest_response': {
+        'task': 'process_packages_with_latest_response',  # Ensure this is the correct path to your task
+        'schedule': crontab(minute='*'),  # Runs every minute, adjust as needed
+    }
 }
